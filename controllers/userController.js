@@ -3,7 +3,7 @@ const User = require('../models/User');
 exports.register = async (req, res, next) => {
     const isExist = await User.findOne({email: req.body.email});
     if (isExist){
-        return res.json({
+        return res.status(409).json({
             error_code: 409,
             message: 'User with this email exists'
         });

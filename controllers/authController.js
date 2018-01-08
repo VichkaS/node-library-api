@@ -1,11 +1,12 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const validator = require('validator');
 
 
 exports.login = async (req, res) => {
     const user = await User.findOne({email: req.body.email}); 
     if (!user) {
-        return res.json({
+        return res.status(401).json({
             error_code: 401,
             message: 'Authentication failed. User not found'
         });
@@ -17,7 +18,7 @@ exports.login = async (req, res) => {
                 token: token
             });
         } else {
-            res.json({
+            res.status(401).json({
                 error_code: 401,
                 message: 'Authentication failed. Wrong password'
             });
@@ -28,14 +29,14 @@ exports.login = async (req, res) => {
 exports.verifyToken = (req, res, next) => {
     const token = req.headers['x-access-token'];
     if (!token){
-        return res.json({
+        return res.status(403).json({
             error_code: 403,
             message: 'No token provided'
         }); 
     }
     jwt.verify(token, process.env.SECRET, function(err, decoded) {
         if (err) {
-            return res.json({
+            return res.status(500).json({
                 error_code: 500,
                 message: 'Failed to authenticate token'
             });
@@ -44,4 +45,27 @@ exports.verifyToken = (req, res, next) => {
         console.log('hi now i send decoded id ' + req.userId);
         next();
     });
+};
+
+exports.validateRegister = (req, res, next) => {
+    if (validator.isEmpty(req.body.email) || validator.isEmpty(req.body.name) 
+        || validator.isEmpty(req.body.password) || validator.isEmpty(req.body.passwordConfirm)){
+            return res.status(409).json({
+                error_code: 409,
+                message: 'All fields must be filled'
+            });
+    }
+    if (!validator.isEmail(req.body.email)){
+        return res.status(409).json({
+            error_code: 409,
+            message: 'Invalid email'
+        });
+    }
+    if (!validator.equals(req.body.password, req.body.passwordConfirm)){
+        return res.status(409).json({
+            error_code: 409,
+            message: 'Your passwords do not match'
+        });
+    }
+    next();
 };

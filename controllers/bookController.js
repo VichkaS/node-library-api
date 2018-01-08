@@ -20,6 +20,22 @@ exports.addBook = async (req, res) => {
     }
 };
 
+exports.updateBook = async (req, res) => {
+    try{
+        const store = await Book.findOneAndUpdate({_id: req.params.id}, req.body, {
+            new: true,
+            runValidators: true,
+        }).exec();
+        res.json(store);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            error_code: 500,
+            message: err.message
+        })
+    }
+}
+
 exports.getBooks = async (req, res) => {
     try {
         const books = await Book.find(req.query);
@@ -56,7 +72,7 @@ exports.getBookById = async (req, res) => {
 
 exports.getReadsBooks = async (req, res) => {
     try {
-        const user = await User.findOne({_id: req.userId});
+        const user = await User.findOne({_id: req.userId}).populate('reads');
         res.json({
             books: user.reads
         });
@@ -71,7 +87,7 @@ exports.getReadsBooks = async (req, res) => {
 
 exports.getFavoritesBooks = async (req, res) => {
     try {
-        const user = await User.findOne({_id: req.userId});
+        const user = await User.findOne({_id: req.userId}).populate('favorites');
         res.json({
             books: user.favorites
         });

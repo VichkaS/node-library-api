@@ -6,6 +6,6 @@ const bookController = require('../controllers/bookController');
 
 router.post('/register', userController.register, authController.login);
 router.post('/auth', authController.login);
-router.get('/books', bookController.getBooks); // TODO проверка параметров, чтобы лишние нельзя было передать
+router.get('/books', bookController.getBooks); 
 
 module.exports = router;
