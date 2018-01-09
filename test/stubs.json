@@ -1,0 +1,28 @@
+{
+  "books": [
+    {
+      "name": "first",
+      "author": "iam",
+      "description": "bla X100",
+      "genre": "genre"
+    },
+    {
+      "name": "second",
+      "author": "iam",
+      "description": "bla X100",
+      "genre": "genre"
+    },
+    {
+      "name": "first",
+      "author": "notiam",
+      "description": "bla X100",
+      "genre": "genre"
+    },
+    {
+      "name": "second",
+      "author": "notiam",
+      "description": "bla X100",
+      "genre": "genre"
+    }
+  ]
+}

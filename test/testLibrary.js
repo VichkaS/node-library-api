@@ -1,3 +1,4 @@
+/*
 const validator = require('validator');
 const expect = require('chai').expect;
 
@@ -40,3 +41,4 @@ describe('Проверка подключаемой библиотеки', () =>
         });
     });
 });
+*/

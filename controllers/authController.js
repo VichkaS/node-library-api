@@ -2,7 +2,6 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
 
-
 exports.login = async (req, res) => {
     const user = await User.findOne({email: req.body.email}); 
     if (!user) {
@@ -41,21 +40,26 @@ exports.verifyToken = (req, res, next) => {
                 message: 'Failed to authenticate token'
             });
         }
-        req.userId = decoded.id; 
-        console.log('hi now i send decoded id ' + req.userId);
+        req.userId = decoded.id;
         next();
     });
 };
 
+exports.stubForVerifyToken = (req, res) => {
+  res.json({
+     message: 'Verify completed'
+  });
+};
+
 exports.validateRegister = (req, res, next) => {
-    if (validator.isEmpty(req.body.email) || validator.isEmpty(req.body.name) 
+    if (validator.isEmpty(req.body.email) || validator.isEmpty(req.body.name)
         || validator.isEmpty(req.body.password) || validator.isEmpty(req.body.passwordConfirm)){
             return res.status(409).json({
                 error_code: 409,
                 message: 'All fields must be filled'
             });
     }
-    if (!validator.isEmail(req.body.email)){
+    if (!validator.isEmail(req.body.email.toString())){
         return res.status(409).json({
             error_code: 409,
             message: 'Invalid email'
