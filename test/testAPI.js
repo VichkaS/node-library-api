@@ -480,7 +480,7 @@ describe('CRUD операции', () => {
         });
     });
 
-    describe.only('Обновление книги', () => {
+    describe('Обновление книги', () => {
         let id = '';
 
         before((done) => {
@@ -542,6 +542,102 @@ describe('CRUD операции', () => {
         });
     });
 
+    describe('Статус книги: чтение', () => {
+        let id = '';
+
+        before((done) => {
+            const book = {
+                name: 'first individual',
+                author: 'iam',
+                description: 'bla X100',
+                genre: 'genre'
+            };
+
+            request(server)
+                .post('/books')
+                .send(book)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    id = res.body._id;
+                    done();
+                })
+        });
+
+        it('Установка статуса', (done) => {
+            request(server)
+                .post(`/books/${id}/read`)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    expect(res.body).to.have.property('read');
+                    expect(res.body.read).to.equal(true);
+                    done();
+                });
+        });
+
+        it('Снятие статуса', (done) => {
+            request(server)
+                .post(`/books/${id}/read`)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    expect(res.body).to.have.property('read');
+                    expect(res.body.read).to.equal(false);
+                    done();
+                });
+        });
+    });
+
+    describe('Статус книги: фаворит', () => {
+        let id = '';
+
+        before((done) => {
+            const book = {
+                name: 'first individual',
+                author: 'iam',
+                description: 'bla X100',
+                genre: 'genre'
+            };
+
+            request(server)
+                .post('/books')
+                .send(book)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    id = res.body._id;
+                    done();
+                })
+        });
+
+        it('Установка статуса', (done) => {
+            request(server)
+                .post(`/books/${id}/vaforite`)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    expect(res.body).to.have.property('vaforite');
+                    expect(res.body.vaforite).to.equal(true);
+                    done();
+                });
+        });
+
+        it('Снятие статуса', (done) => {
+            request(server)
+                .post(`/books/${id}/vaforite`)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    expect(res.body).to.have.property('vaforite');
+                    expect(res.body.vaforite).to.equal(false);
+                    done();
+                });
+        });
+    });
+
     describe('Получение книг', () => {
         before(() => {
             stubs.books.forEach((f) => new Book(f).save().catch((e) => console.log(e)));
@@ -555,10 +651,159 @@ describe('CRUD операции', () => {
                     if (err) return done(err);
                     expect(res.body).to.have.property('books');
                     expect(res.body.books).to.be.a('array');
-                    expect(res.body.books.length).to.be.equal(4);
+                    expect(res.body.books.length).to.not.equal(0);
                     done();
                 })
         });
-    })
+    });
+
+    describe('Получение книги по id' , () => {
+        let id = '';
+
+        const book = {
+            name: 'first individual',
+            author: 'iam',
+            description: 'bla X100',
+            genre: 'genre'
+        };
+
+        before((done) => {
+            request(server)
+                .post('/books')
+                .send(book)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    id = res.body._id;
+                    done();
+                })
+        });
+
+        it('Проверка', (done) => {
+           request(server)
+               .get(`/books/${id}`)
+               .expect(200)
+               .end((err, res) => {
+                   if (err) return done(err);
+                   expect(res.body).to.have.property('name');
+                   expect(res.body).to.have.property('author');
+                   expect(res.body).to.have.property('description');
+                   expect(res.body).to.have.property('genre');
+
+                   expect(res.body.name).to.equal(book.name);
+                   expect(res.body.author).to.equal(book.author);
+                   expect(res.body.description).to.equal(book.description);
+                   expect(res.body.genre).to.equal(book.genre);
+                   done();
+               })
+        });
+    });
+
+    describe('Получение книг со статусом "чтение"', () => {
+        let id = '';
+
+        before((done) => {
+            const book = {
+                name: 'first individual',
+                author: 'iam',
+                description: 'bla X100',
+                genre: 'genre'
+            };
+
+            request(server)
+                .post('/books')
+                .send(book)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    id = res.body._id;
+                    done();
+                })
+        });
+
+        describe('Установка статуса для книги', () => {
+           before((done) => {
+               request(server)
+                   .post(`/books/${id}/read`)
+                   .set('x-access-token', token)
+                   .expect(200)
+                   .end((err, res) => {
+                       done();
+                   });
+           });
+
+           it('Получение', (done) => {
+               request(server)
+                   .get('/books/reads')
+                   .set('x-access-token', token)
+                   .expect(200)
+                   .end((err, res) => {
+                       if (err) return done(err);
+                       expect(res.body).to.have.property('books');
+                       expect(res.body.books).to.be.a('array');
+                       expect(res.body.books).to.include(id);
+                       expect(res.body.books.length).to.not.equal(0);
+                       done();
+                   })
+           });
+
+        });
+    });
+
+    describe('Получение книг со статусом "фаворит"', () => {
+        let id = '';
+
+        before((done) => {
+            const book = {
+                name: 'first individual',
+                author: 'iam',
+                description: 'bla X100',
+                genre: 'genre'
+            };
+
+            request(server)
+                .post('/books')
+                .send(book)
+                .set('x-access-token', token)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    id = res.body._id;
+                    done();
+                })
+        });
+
+        describe('Установка статуса для книги', () => {
+            before((done) => {
+                request(server)
+                    .post(`/books/${id}/vaforite`)
+                    .set('x-access-token', token)
+                    .expect(200)
+                    .end((err, res) => {
+                        expect(res.body).to.have.property('vaforite');
+                        expect(res.body.vaforite).to.equal(true);
+                        done();
+                    });
+            });
+
+            it('Получение', (done) => {
+                request(server)
+                    .get('/books/favorites')
+                    .set('x-access-token', token)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) return done(err);
+                        expect(res.body).to.have.property('books');
+                        expect(res.body.books).to.be.a('array');
+                        expect(res.body.books).to.include(id);
+                        expect(res.body.books.length).to.not.equal(0);
+                        done();
+                    })
+            });
+
+        });
+    });
 
 });

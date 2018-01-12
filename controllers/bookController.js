@@ -39,7 +39,7 @@ exports.updateBook = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getBooks = async (req, res) => {
     try {
@@ -59,13 +59,7 @@ exports.getBooks = async (req, res) => {
 exports.getBookById = async (req, res) => {
     try {
         const book = await Book.findOne({_id: req.params.id});
-        res.json({
-            id: book._id,
-            name: book.name,
-            author: book.author,
-            about: book.about,
-            genre: book.genre
-        });
+        res.json(book);
     } catch (err) {
         console.log(err);
         res.json({
@@ -77,7 +71,7 @@ exports.getBookById = async (req, res) => {
 
 exports.getReadsBooks = async (req, res) => {
     try {
-        const user = await User.findOne({_id: req.userId}).populate('reads');
+        const user = await User.findOne({_id: req.userId});
         res.json({
             books: user.reads
         });
@@ -92,9 +86,9 @@ exports.getReadsBooks = async (req, res) => {
 
 exports.getFavoritesBooks = async (req, res) => {
     try {
-        const user = await User.findOne({_id: req.userId}).populate('favorites');
+        const user = await User.findOne({_id: req.userId});
         res.json({
-            books: user.favorites
+            books: user.vaforites
         });
     } catch (err) {
         console.log(err);
@@ -108,23 +102,20 @@ exports.getFavoritesBooks = async (req, res) => {
 exports.setReadBook = async (req, res) => {
     try {
         const user = await User.findOne({_id: req.userId});
-        const index = user.reads.indexOf(req.params.id);
-        if (index => 0) {
-            user.reads.splice(index, 1);
-            await user.save();
-            res.json({
-                read: false
-            });
-        } else {
-            user.reads.push(req.params.id);
-            await user.save();
-            res.json({
-                read: true
-            });
-        }
-    } catch (err) {
-        console.log(err);
+        const books = user.reads.map((obj) => obj.toString());
+        const operator = books.includes(req.params.id) ? '$pull' : '$addToSet';
+        const userUpdate = await User
+            .findByIdAndUpdate(user._id,
+                {[operator]: {reads: req.params.id}},
+                {new: true},
+            );
         res.json({
+            read: operator === '$pull' ? false : true
+        });
+    } catch (err) {
+        console.log('setReadBook');
+        console.log(err);
+        res.status(500).json({
             error_code: 500,
             message: err.message
         })
@@ -134,23 +125,19 @@ exports.setReadBook = async (req, res) => {
 exports.setFavoriteBook = async (req, res) => {
     try {
         const user = await User.findOne({_id: req.userId});
-        const index = user.favorites.indexOf(req.params.id);
-        if (index => 0) {
-            user.favorites.splice(index, 1);
-            await user.save();
-            res.json({
-                favorite: false
-            });
-        } else {
-            user.favorites.push(req.params.id);
-            await user.save();
-            res.json({
-                favorite: true
-            });
-        }
+        const books = user.vaforites.map((obj) => obj.toString());
+        const operator = books.includes(req.params.id) ? '$pull' : '$addToSet';
+        const userUpdate = await User
+            .findByIdAndUpdate(user._id,
+                {[operator]: {vaforites: req.params.id}},
+                {new: true},
+            );
+        res.json({
+            vaforite: operator === '$pull' ? false : true
+        });
     } catch (err) {
         console.log(err);
-        res.json({
+        res.status(500).json({
             error_code: 500,
             message: err.message
         })
