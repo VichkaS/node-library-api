@@ -14,7 +14,8 @@ exports.login = async (req, res) => {
         if (isMatch && !err) {
             let token = jwt.sign({id: user._id}, process.env.SECRET, {expiresIn: 3600});
             res.json({
-                token: token
+                token: token,
+                name: user.name
             });
         } else {
             res.status(401).json({

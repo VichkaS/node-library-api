@@ -4,7 +4,14 @@ const validator = require('validator');
 
 exports.addBook = async (req, res) => {
     try {
-        const book = await (new Book(req.body)).save();
+        const book = await (new Book({
+            name: req.body.name,
+            author: req.body.author,
+            description: req.body.description,
+            genre: req.body.genre,
+            read: false,
+            favorite: false,
+        })).save();
         res.json(book);
     } catch (err) {
         console.log(err);
@@ -71,7 +78,7 @@ exports.getBookById = async (req, res) => {
 
 exports.getReadsBooks = async (req, res) => {
     try {
-        const user = await User.findOne({_id: req.userId});
+        const user = await User.findOne({_id: req.userId}).populate('reads');
         res.json({
             books: user.reads
         });
@@ -86,7 +93,7 @@ exports.getReadsBooks = async (req, res) => {
 
 exports.getFavoritesBooks = async (req, res) => {
     try {
-        const user = await User.findOne({_id: req.userId});
+        const user = await User.findOne({_id: req.userId}).populate('vaforites');
         res.json({
             books: user.vaforites
         });
@@ -99,6 +106,10 @@ exports.getFavoritesBooks = async (req, res) => {
     }
 };
 
+function isLabaledBook(operator) {
+    return operator === '$pull' ? false : true;
+}
+
 exports.setReadBook = async (req, res) => {
     try {
         const user = await User.findOne({_id: req.userId});
@@ -109,8 +120,11 @@ exports.setReadBook = async (req, res) => {
                 {[operator]: {reads: req.params.id}},
                 {new: true},
             );
+        const book = await Book.findOne({_id:req.params.id});
+        book.read = isLabaledBook(operator);
+        await book.save();
         res.json({
-            read: operator === '$pull' ? false : true
+            read: isLabaledBook(operator)
         });
     } catch (err) {
         console.log('setReadBook');
@@ -132,8 +146,11 @@ exports.setFavoriteBook = async (req, res) => {
                 {[operator]: {vaforites: req.params.id}},
                 {new: true},
             );
+        const book = await Book.findOne({_id:req.params.id});
+        book.favorite = isLabaledBook(operator);
+        await book.save();
         res.json({
-            vaforite: operator === '$pull' ? false : true
+            vaforite: isLabaledBook(operator)
         });
     } catch (err) {
         console.log(err);

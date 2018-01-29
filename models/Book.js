@@ -17,6 +17,12 @@ const bookSchema = new Schema({
     genre: {
         type: String,
     },
+    favorite: {
+        type: Boolean,
+    },
+    read: {
+        type: Boolean,
+    },
 });
 
 module.exports = mongoose.model('Book', bookSchema);
